@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="th" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>AES M-App - ระบบตรวจสอบเครื่องมือ AESCON</title>
+  
+  <!-- PWA Meta -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="AES M-App">
+  <link rel="apple-touch-icon" href="/static/app_icon.png">
+
+  <!-- Tailwind CSS & Fonts -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="bg-slate-100 text-slate-800 font-['Prompt'] antialiased min-h-full flex flex-col pb-safe selection:bg-blue-500 selection:text-white">
+
+  <!-- TOP MOBILE APP BAR -->
+  <header class="glass-header text-white sticky top-0 z-40 pt-safe border-b border-slate-700/50 shadow-md">
+    <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center space-x-2.5">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-700 flex items-center justify-center shadow-inner border border-blue-400/40">
+          <i data-lucide="wrench" class="w-5 h-5 text-amber-300"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-1.5">
+            <h1 class="text-base font-bold tracking-tight leading-tight">AES M-APP</h1>
+            <span class="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] px-1.5 py-0.2 rounded-full font-semibold flex items-center">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1 animate-pulse"></span>2026
+            </span>
+          </div>
+          <p class="text-[11px] text-slate-300 leading-none mt-0.5">ระบบตรวจสอบเครื่องมือ AESCON</p>
+        </div>
+      </div>
+
+      <!-- Quick Action Right -->
+      <div class="flex items-center space-x-2">
+        <button onclick="switchTab('new-maintenance')" class="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 active:scale-95 text-slate-950 px-3 py-1.5 rounded-full text-xs font-bold shadow-md flex items-center transition">
+          <i data-lucide="plus" class="w-4 h-4 mr-1"></i> ตรวจด่วน
+        </button>
+      </div>
+    </div>
+
+    <!-- QUICK CATEGORY CHIPS BAR -->
+    <div class="px-4 py-2 overflow-x-auto no-scrollbar flex space-x-2 border-t border-slate-800/80 bg-slate-900/60 text-xs">
+      <button onclick="filterByChip('all')" class="filter-chip active" id="chip-all">🔥 ทั้งหมด</button>
+      <button onclick="filterByChip('สว่าน')" class="filter-chip" id="chip-สว่าน">🔨 สว่าน</button>
+      <button onclick="filterByChip('หินเจียร์')" class="filter-chip" id="chip-หินเจียร์">⚙️ หินเจียร์</button>
+      <button onclick="filterByChip('ตู้เชื่อม')" class="filter-chip" id="chip-ตู้เชื่อม">⚡ ตู้เชื่อม</button>
+      <button onclick="filterByChip('เลื่อย')" class="filter-chip" id="chip-เลื่อย">🪵 เลื่อย</button>
+      <button onclick="filterByChip('ปั๊มลม')" class="filter-chip" id="chip-ปั๊มลม">💨 ปั๊มลม</button>
+      <button onclick="filterByChip('บันได')" class="filter-chip" id="chip-บันได">🪜 บันได</button>
+      <button onclick="filterByChip('ปั๊มน้ำ')" class="filter-chip" id="chip-ปั๊มน้ำ">💧 ปั๊มน้ำ</button>
+    </div>
+  </header>
+
+  <!-- MAIN APP CONTAINER -->
+  <main class="max-w-3xl mx-auto px-3 sm:px-4 py-3 flex-1 w-full space-y-4">
+
+    <!-- ========================================================================= -->
+    <!-- TAB 1: TOOL SEARCH & CARDS FEED -->
+    <!-- ========================================================================= -->
+    <section id="tab-tools" class="tab-content block space-y-3">
+      <!-- Search Box with Floating Icon -->
+      <div class="relative">
+        <input type="text" id="search-input" placeholder="🔍 ค้นหารหัส เช่น AES-A01 หรือชื่อเครื่อง..."
+               class="w-full pl-10 pr-10 py-2.5 bg-white border border-slate-300/80 rounded-xl text-xs sm:text-sm font-medium shadow-xs focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition">
+        <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3"></i>
+        <button onclick="clearSearch()" id="clear-search-btn" class="hidden absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 p-1">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- Quick Metrics Ribbon -->
+      <div class="grid grid-cols-3 gap-2">
+        <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-xs flex items-center space-x-2">
+          <div class="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
+            <i data-lucide="boxes" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <p class="text-[10px] text-slate-500 font-semibold leading-tight">เครื่องมือ</p>
+            <h4 id="stat-total-tools" class="text-xs font-bold text-slate-800 leading-tight">4,433</h4>
+          </div>
+        </div>
+
+        <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-xs flex items-center space-x-2">
+          <div class="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+            <i data-lucide="calendar" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <p class="text-[10px] text-slate-500 font-semibold leading-tight">แผน PM ปีนี้</p>
+            <h4 id="stat-total-pm-card" class="text-xs font-bold text-slate-800 leading-tight">8,788</h4>
+          </div>
+        </div>
+
+        <div class="bg-white p-2.5 rounded-xl border border-slate-200 shadow-xs flex items-center space-x-2">
+          <div class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+            <i data-lucide="check-circle" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <p class="text-[10px] text-slate-500 font-semibold leading-tight">PM สำเร็จ</p>
+            <h4 id="stat-pm-rate" class="text-xs font-bold text-emerald-600 leading-tight">0%</h4>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feed List Container -->
+      <div class="flex items-center justify-between px-1">
+        <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center">
+          <i data-lucide="cpu" class="w-3.5 h-3.5 mr-1 text-blue-600"></i> รายการเครื่องมือ
+        </h3>
+        <span id="tools-count-badge" class="text-[11px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200">โหลดข้อมูล...</span>
+      </div>
+
+      <!-- Tools Mobile Cards Container -->
+      <div id="tools-cards-container" class="space-y-2.5">
+        <!-- Dynamically rendered mobile cards -->
+      </div>
+
+      <!-- Pagination for Mobile -->
+      <div class="py-2 flex items-center justify-between text-xs text-slate-500">
+        <span id="pagination-info" class="text-[11px]"></span>
+        <div class="flex space-x-1.5" id="pagination-buttons"></div>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 2: WEEKLY PM SCHEDULE -->
+    <!-- ========================================================================= -->
+    <section id="tab-schedule" class="tab-content hidden space-y-3">
+      <!-- Month & Week Mobile Selector -->
+      <div class="bg-gradient-to-br from-blue-900 to-indigo-950 text-white rounded-2xl p-4 shadow-sm space-y-3">
+        <div class="flex items-center justify-between">
+          <h3 class="text-sm font-bold flex items-center text-amber-300">
+            <i data-lucide="calendar-check" class="w-4 h-4 mr-1.5"></i> แผนบำรุงรักษาประจำปี 2026
+          </h3>
+          <button onclick="setCurrentWeekAndMonth()" class="bg-white/20 active:scale-95 text-white px-2.5 py-1 rounded-lg text-[11px] font-semibold transition">
+            สัปดาห์นี้
+          </button>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-[10px] text-blue-200 mb-0.5">เลือกเดือน</label>
+            <select id="schedule-month-select" class="w-full bg-blue-950 text-white border border-blue-500/50 rounded-lg px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-amber-400">
+              <option value="1">1. มกราคม</option>
+              <option value="2">2. กุมภาพันธ์</option>
+              <option value="3">3. มีนาคม</option>
+              <option value="4">4. เมษายน</option>
+              <option value="5">5. พฤษภาคม</option>
+              <option value="6">6. มิถุนายน</option>
+              <option value="7">7. กรกฎาคม</option>
+              <option value="8" selected>8. สิงหาคม (ปัจจุบัน)</option>
+              <option value="9">9. กันยายน</option>
+              <option value="10">10. ตุลาคม</option>
+              <option value="11">11. พฤศจิกายน</option>
+              <option value="12">12. ธันวาคม</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-[10px] text-blue-200 mb-0.5">เลือกสัปดาห์</label>
+            <select id="schedule-week-select" class="w-full bg-blue-950 text-white border border-blue-500/50 rounded-lg px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-amber-400">
+              <option value="all">ทุกสัปดาห์</option>
+              <option value="1">สัปดาห์ 1</option>
+              <option value="2">สัปดาห์ 2</option>
+              <option value="3">สัปดาห์ 3</option>
+              <option value="4" selected>สัปดาห์ 4</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Filter Status Segment -->
+        <div class="flex bg-blue-950/80 p-0.5 rounded-lg border border-blue-500/30 text-xs">
+          <button type="button" onclick="setScheduleStatusFilter('all')" id="sched-tab-all" class="flex-1 py-1 text-center rounded font-semibold bg-white/20 text-white">ทั้งหมด</button>
+          <button type="button" onclick="setScheduleStatusFilter('pending')" id="sched-tab-pending" class="flex-1 py-1 text-center rounded font-medium text-blue-200">ยังไม่ตรวจ</button>
+          <button type="button" onclick="setScheduleStatusFilter('done')" id="sched-tab-done" class="flex-1 py-1 text-center rounded font-medium text-blue-200">ตรวจแล้ว</button>
+        </div>
+        <input type="hidden" id="schedule-status-filter" value="all">
+      </div>
+
+      <!-- Schedule Results Title -->
+      <div class="flex items-center justify-between px-1">
+        <h4 id="schedule-table-title" class="text-xs font-bold text-slate-700">รายการตามแผน PM</h4>
+        <span id="schedule-count-badge" class="text-[11px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full">0 รายการ</span>
+      </div>
+
+      <!-- Schedule Mobile Cards List -->
+      <div id="schedule-cards-container" class="space-y-2.5"></div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 3: NEW MAINTENANCE / INSPECTION ENTRY FORM -->
+    <!-- ========================================================================= -->
+    <section id="tab-new-maintenance" class="tab-content hidden space-y-3">
+      <div class="bg-white rounded-2xl shadow-xs border border-slate-200 p-4 space-y-4">
+        
+        <div class="flex items-center space-x-2.5 pb-3 border-b border-slate-100">
+          <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-800 flex items-center justify-center">
+            <i data-lucide="clipboard-check" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-slate-800 leading-tight">ฟอร์มตรวจเช็คและซ่อมบำรุง</h3>
+            <p class="text-[11px] text-slate-500">อิงเกณฑ์คู่มือ AES รายวัน & รายเดือน</p>
+          </div>
+        </div>
+
+        <form id="maintenance-form" onsubmit="submitMaintenanceForm(event)" class="space-y-4">
+          <!-- Tool Selection -->
+          <div class="space-y-1.5">
+            <label class="block text-xs font-bold text-slate-700">1. เลือกเครื่องมือ <span class="text-red-500">*</span></label>
+            <div class="relative">
+              <input type="text" id="form-tool-search" placeholder="พิมพ์รหัส เช่น AES-A01 หรือชื่อเครื่อง..."
+                     autocomplete="off" oninput="searchToolForForm(this.value)"
+                     class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm focus:bg-white focus:ring-2 focus:ring-blue-600">
+              <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-2.5"></i>
+            </div>
+            <div id="form-tool-dropdown" class="hidden max-h-48 overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-lg divide-y divide-slate-100 z-30"></div>
+
+            <!-- Selected Tool Card -->
+            <div id="form-selected-tool-card" class="hidden p-3 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl flex items-center justify-between">
+              <div>
+                <div class="flex items-center space-x-2">
+                  <span id="card-tool-code" class="font-bold text-blue-900 text-xs font-mono"></span>
+                  <span id="card-tool-category" class="bg-blue-200 text-blue-900 text-[10px] px-1.5 py-0.2 rounded font-medium"></span>
+                  <span id="card-tool-type-badge" class="bg-indigo-100 text-indigo-800 text-[10px] px-1.5 py-0.2 rounded font-semibold">
+                    <span id="card-tool-type"></span>
+                  </span>
+                </div>
+                <p id="card-tool-name" class="text-xs text-slate-700 font-medium mt-0.5"></p>
+              </div>
+              <button type="button" onclick="clearSelectedTool()" class="text-slate-400 hover:text-red-600 p-1">
+                <i data-lucide="x" class="w-4 h-4"></i>
+              </button>
+            </div>
+            <input type="hidden" id="form-tool-id" required>
+          </div>
+
+          <!-- Dynamic Inspection Checklist Section -->
+          <div id="form-checklist-section" class="space-y-2.5 hidden">
+            <div class="flex items-center justify-between pt-2 border-t border-slate-100">
+              <div>
+                <label class="text-xs font-bold text-slate-800 flex items-center">
+                  <i data-lucide="list-checks" class="w-3.5 h-3.5 mr-1 text-blue-600"></i>
+                  2. รายการตรวจเช็คตามคู่มือ AES
+                </label>
+                <p class="text-[10px] text-slate-500">ประเภท: <strong id="checklist-type-label" class="text-blue-700"></strong></p>
+              </div>
+              <button type="button" onclick="setAllChecklistPass()" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-300 px-2.5 py-1 rounded-lg text-[11px] font-bold active:scale-95 transition">
+                ✓ ผ่านทุกข้อ
+              </button>
+            </div>
+
+            <!-- Frequency Switcher -->
+            <div class="flex bg-slate-100 p-0.5 rounded-lg text-xs">
+              <button type="button" onclick="switchChecklistFrequency('monthly')" id="chk-btn-monthly" class="flex-1 py-1 text-center rounded font-semibold bg-white shadow-xs text-blue-900">ตรวจรายเดือน (PM)</button>
+              <button type="button" onclick="switchChecklistFrequency('daily')" id="chk-btn-daily" class="flex-1 py-1 text-center rounded font-medium text-slate-600">ตรวจรายวัน</button>
+            </div>
+
+            <!-- Checklist Cards Container -->
+            <div id="form-checklist-container" class="space-y-2 max-h-80 overflow-y-auto pr-1"></div>
+          </div>
+
+          <!-- Maintenance Metadata -->
+          <div class="space-y-3 pt-2 border-t border-slate-100 text-xs">
+            <label class="block font-bold text-slate-800">3. สรุปผลและข้อมูลผู้ตรวจ</label>
+
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-slate-600 mb-0.5">ประเภทการบำรุงรักษา</label>
+                <select id="form-maintenance-type" required class="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs">
+                  <option value="PM ตามแผนประจำปี">🔧 PM ตามแผนประจำปี</option>
+                  <option value="ตรวจเช็คสภาพรายวัน">⚡ ตรวจเช็คสภาพรายวัน</option>
+                  <option value="แจ้งซ่อมฉุกเฉิน / ชำรุด">🚨 แจ้งซ่อมฉุกเฉิน / ชำรุด</option>
+                  <option value="เปลี่ยนอะไหล่ / บำรุงรักษาพิเศษ">⚙️ เปลี่ยนอะไหล่</option>
+                  <option value="ตรวจเช็คสภาพทั่วไป">🔍 ตรวจเช็คทั่วไป</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-slate-600 mb-0.5">วันที่ดำเนินการ</label>
+                <input type="date" id="form-maintenance-date" required class="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-slate-600 mb-0.5">ชื่อผู้ตรวจ / ช่าง <span class="text-red-500">*</span></label>
+                <input type="text" id="form-inspector-name" placeholder="ระบุชื่อผู้ตรวจ" required class="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs">
+              </div>
+
+              <div>
+                <label class="block text-slate-600 mb-0.5">สรุปผลภาพรวม <span class="text-red-500">*</span></label>
+                <select id="form-result-status" required class="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs font-semibold text-emerald-800">
+                  <option value="ปกติผ่านเกณฑ์">✅ ปกติผ่านเกณฑ์ (P)</option>
+                  <option value="ซ่อมเสร็จสมบูรณ์">🛠️ ซ่อมเสร็จสมบูรณ์</option>
+                  <option value="มีข้อบกพร่อง/รอซ่อม">⚠️ ผิดปกติรอซ่อม (O)</option>
+                  <option value="รออะไหล่">⏳ รออะไหล่</option>
+                  <option value="ปลดระวาง/ชำรุด">❌ ชำรุด/ปลดระวาง</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Photo Camera Attachment for Mobile -->
+            <div>
+              <label class="block text-slate-600 mb-1 flex items-center">
+                <i data-lucide="camera" class="w-3.5 h-3.5 mr-1 text-blue-600"></i> ถ่ายรูปสภาพเครื่องมือหน้างาน (ถ้ามี)
+              </label>
+              <div class="flex items-center space-x-2">
+                <label class="flex-1 cursor-pointer bg-slate-50 hover:bg-slate-100 border border-dashed border-slate-300 rounded-xl p-2.5 text-center flex items-center justify-center space-x-2 text-slate-600 active:scale-98 transition">
+                  <i data-lucide="camera" class="w-4 h-4 text-blue-600"></i>
+                  <span id="photo-label-text" class="text-xs font-semibold">แตะเพื่อถ่ายรูป / เลือกภาพ</span>
+                  <input type="file" id="form-photo-input" accept="image/*" capture="environment" onchange="previewPhoto(this)" class="hidden">
+                </label>
+                <div id="photo-preview-container" class="hidden shrink-0 relative">
+                  <img id="photo-preview-img" class="w-12 h-12 rounded-lg object-cover border border-slate-300 shadow-xs">
+                  <button type="button" onclick="removePhoto()" class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5">
+                    <i data-lucide="x" class="w-3 h-3"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-slate-600 mb-0.5">รายละเอียดงาน / ข้อเสนอแนะเพิ่มเติม</label>
+              <textarea id="form-details" rows="2" placeholder="ระบุสิ่งที่ทำ เช่น หยอดน้ำมัน, ลับคม, ทดสอบ..." class="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs"></textarea>
+            </div>
+
+            <div class="p-2.5 bg-blue-50/70 border border-blue-200 rounded-xl flex items-center space-x-2">
+              <input type="checkbox" id="form-update-pm" checked class="h-4 w-4 text-blue-600 rounded">
+              <label for="form-update-pm" class="text-[11px] text-blue-950 font-semibold cursor-pointer">
+                อัปเดตผลจริง (Actual A) ในตารางแผน PM ปี 2026 อัตโนมัติ
+              </label>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <div class="pt-2 flex items-center space-x-2">
+            <button type="button" onclick="resetMaintenanceForm()" class="px-3 py-2 border border-slate-300 text-slate-600 rounded-xl text-xs font-semibold">ล้าง</button>
+            <button type="submit" id="form-submit-btn" class="flex-1 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-700 active:scale-98 text-white rounded-xl text-xs sm:text-sm font-bold shadow-md flex items-center justify-center space-x-1.5 transition">
+              <i data-lucide="save" class="w-4 h-4"></i>
+              <span>บันทึกผลการตรวจสอบ</span>
+            </button>
+          </div>
+        </form>
+
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 4: MAINTENANCE LOGS -->
+    <!-- ========================================================================= -->
+    <section id="tab-logs" class="tab-content hidden space-y-3">
+      <div class="flex items-center justify-between">
+        <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center">
+          <i data-lucide="history" class="w-3.5 h-3.5 mr-1 text-blue-600"></i> ประวัติการตรวจสอบและซ่อม
+        </h3>
+        <a href="/api/export" target="_blank" class="bg-emerald-600 text-white text-[11px] px-2.5 py-1 rounded-lg font-bold flex items-center shadow-xs">
+          <i data-lucide="download" class="w-3 h-3 mr-1"></i> Excel
+        </a>
+      </div>
+
+      <div id="logs-cards-container" class="space-y-2.5"></div>
+      
+      <div class="py-2 flex items-center justify-between text-xs text-slate-500">
+        <span id="logs-pagination-info" class="text-[11px]"></span>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 5: EXECUTIVE DASHBOARD -->
+    <!-- ========================================================================= -->
+    <section id="tab-dashboard" class="tab-content hidden space-y-4">
+      <div class="grid grid-cols-2 gap-2.5">
+        <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-xs">
+          <p class="text-[10px] text-slate-500 font-bold uppercase">เครื่องมือพร้อมใช้</p>
+          <h3 id="dash-total-tools" class="text-xl font-black text-slate-800 mt-0.5">4,433</h3>
+          <span class="text-[10px] text-emerald-600 font-semibold">100% ใช้งานได้</span>
+        </div>
+
+        <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-xs">
+          <p class="text-[10px] text-slate-500 font-bold uppercase">แผน PM ปี 2026</p>
+          <h3 id="dash-total-pm" class="text-xl font-black text-blue-600 mt-0.5">8,788</h3>
+          <span class="text-[10px] text-slate-400">48 สัปดาห์</span>
+        </div>
+      </div>
+
+      <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-xs space-y-2">
+        <h4 class="text-xs font-bold text-slate-800 flex items-center">
+          <i data-lucide="folder-tree" class="w-3.5 h-3.5 mr-1 text-blue-600"></i> หมวดหมู่เครื่องมือหลัก
+        </h4>
+        <div id="dash-categories-list" class="space-y-1.5 max-h-60 overflow-y-auto pr-1 text-xs"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- FLOATING MOBILE BOTTOM NAVIGATION BAR -->
+  <!-- ========================================================================= -->
+  <nav class="glass-nav border-t border-slate-200/80 fixed bottom-0 left-0 right-0 z-40 shadow-2xl pb-[env(safe-area-inset-bottom,0px)]">
+    <div class="max-w-3xl mx-auto flex items-center justify-around">
+      <button onclick="switchTab('tools')" id="tab-btn-tools" class="bottom-nav-item active">
+        <i data-lucide="search" class="w-5 h-5 mb-0.5"></i>
+        <span>ค้นหา</span>
+      </button>
+
+      <button onclick="switchTab('schedule')" id="tab-btn-schedule" class="bottom-nav-item">
+        <i data-lucide="calendar" class="w-5 h-5 mb-0.5"></i>
+        <span>แผน PM</span>
+      </button>
+
+      <button onclick="switchTab('new-maintenance')" id="tab-btn-new-maintenance" class="bottom-nav-item">
+        <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center -mt-3 shadow-md border-2 border-white">
+          <i data-lucide="plus" class="w-5 h-5"></i>
+        </div>
+        <span class="text-[10px] mt-0.5">ตรวจเช็ค</span>
+      </button>
+
+      <button onclick="switchTab('logs')" id="tab-btn-logs" class="bottom-nav-item">
+        <i data-lucide="history" class="w-5 h-5 mb-0.5"></i>
+        <span>ประวัติ</span>
+      </button>
+
+      <button onclick="switchTab('dashboard')" id="tab-btn-dashboard" class="bottom-nav-item">
+        <i data-lucide="bar-chart-3" class="w-5 h-5 mb-0.5"></i>
+        <span>สถิติ</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- MODAL: TOOL DETAIL & 48-WEEK PM SCHEDULE & CHECKLIST VIEW -->
+  <div id="tool-detail-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-xs z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl max-w-2xl w-full max-h-[92vh] flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-200">
+      
+      <div class="bg-gradient-to-r from-blue-900 to-indigo-950 text-white px-4 py-3 flex items-center justify-between">
+        <div>
+          <div class="flex items-center space-x-2">
+            <h3 id="modal-tool-code" class="text-sm font-bold font-mono"></h3>
+            <span id="modal-tool-status" class="text-[10px] px-2 py-0.2 rounded-full font-semibold"></span>
+          </div>
+          <p id="modal-tool-name" class="text-xs text-blue-200 mt-0.5"></p>
+        </div>
+        <button onclick="closeToolModal()" class="p-1.5 text-white/70 hover:text-white rounded-full bg-white/10">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="p-4 overflow-y-auto space-y-4 flex-1 text-xs">
+        <div>
+          <h4 class="font-bold text-slate-800 mb-2 flex items-center">
+            <i data-lucide="calendar" class="w-3.5 h-3.5 mr-1 text-blue-600"></i> แผนงาน PM ประจำปี 2026 (Target P vs A)
+          </h4>
+          <div id="modal-pm-grid" class="overflow-x-auto border border-slate-200 rounded-xl"></div>
+        </div>
+
+        <div class="border border-slate-200 rounded-xl p-3 bg-slate-50 space-y-2">
+          <h4 class="font-bold text-slate-800 flex items-center">
+            <i data-lucide="book-open" class="w-3.5 h-3.5 mr-1 text-indigo-600"></i> เกณฑ์ตรวจเช็คตามคู่มือ AES
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+            <div>
+              <strong class="text-blue-900 block mb-1">📅 รายเดือน (PM):</strong>
+              <div id="modal-monthly-chk-list" class="space-y-1 pl-2 border-l border-blue-300 text-slate-600"></div>
+            </div>
+            <div>
+              <strong class="text-amber-900 block mb-1">⚡ รายวัน:</strong>
+              <div id="modal-daily-chk-list" class="space-y-1 pl-2 border-l border-amber-300 text-slate-600"></div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <h4 class="font-bold text-slate-800">ประวัติการตรวจเช็ค</h4>
+            <button id="modal-quick-record-btn" class="bg-blue-600 text-white px-2.5 py-1 rounded-lg font-bold text-[11px]">
+              + บันทึกตรวจเครื่องนี้
+            </button>
+          </div>
+          <div id="modal-logs-list" class="space-y-1.5 max-h-48 overflow-y-auto"></div>
+        </div>
+      </div>
+
+      <div class="p-3 bg-slate-50 border-t border-slate-200 flex justify-end">
+        <button onclick="closeToolModal()" class="w-full py-2 bg-slate-200 text-slate-700 font-bold rounded-xl text-xs">ปิด</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 hidden max-w-xs w-full px-4 py-2.5 rounded-2xl shadow-xl bg-slate-900 text-white flex items-center space-x-2 text-xs font-semibold animate-in fade-in slide-in-from-top duration-150">
+    <div id="toast-icon"></div>
+    <div id="toast-message"></div>
+  </div>
+
+  <!-- App Script -->
+  <script src="/static/app.js"></script>
+</body>
+</html>

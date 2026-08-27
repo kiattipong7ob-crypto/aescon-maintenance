@@ -1,0 +1,18 @@
+{
+  "name": "AESCON Maintenance - ระบบตรวจสอบเครื่องมือ",
+  "short_name": "AES M-App",
+  "description": "ระบบตรวจสอบและบันทึกการซ่อมบำรุงเครื่องมือ/เครื่องจักรประจำปี 2026",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#1e3a8a",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/static/app_icon.png",
+      "sizes": "256x256",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
